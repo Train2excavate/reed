@@ -96,7 +96,7 @@ function offlineResponse(msg){
         "I'm so sorry to hear that😢"
 
     ];
-    let n = Math.floor(Math.random()*2)+2;
+    let n = Math.floor(Math.random()*1)+1;
     let reply='';
     for(let i=0;i<n;i++){
         reply += fragments[Math.floor(Math.random()*fragments.length)] + " ";
