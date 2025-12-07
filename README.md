@@ -117,7 +117,25 @@ function offlineResponse(userMsg){
     "Thanks for sharing — let's explore it.",
     "Hmm, I understand. How does that make you feel?",
     "That's useful info. Could you elaborate a bit more?",
-    "I appreciate you telling me that. Let's continue."
+    "I appreciate you telling me that. Let's continue.",
+    "Thats really cool!",
+    "6 7",
+    "ohio',
+    "Tell me more about it",
+    "idk bro",
+    "unfortanutely I can't give an answer sry",
+    "4 1",
+    "I'm busy right now please wait",
+    "I'm so sorry to hear that😢",
+    "That's great to hear😊',
+    "Awesome, can you talk more about it?",
+    "W😎",
+    "Bro don't expect me to always give an answer",
+    "Did you know that I am a offline AI model called crystalAI and was deveolped by Shahir Hossen (this is a rare message),
+    "Error, please try agagin",
+    "I am a message",
+    "Cool, Tell me more!",
+    "Lets talk about this in a video chat"
   ];
   const n = 2 + Math.floor(Math.random()*2);
   let out = [];
