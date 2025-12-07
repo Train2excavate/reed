@@ -1,4 +1,3 @@
-# reed
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,10 +50,14 @@ body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,
 
 <script>
 const chatArea = document.getElementById('chat-area');
-let messages = [];
+const evelynEmoji = document.getElementById('evelynEmoji');
+let messages = JSON.parse(localStorage.getItem('drEvelynChat')) || [];
 const API_KEY = "AIzaSyAiR5A6Wf1ji9SPWwVlFAVNUtKyGIQ560A";
 
-// Add messages to chat
+// Restore saved messages
+messages.forEach(m=>addMessage(m.sender,m.text));
+
+// Add messages
 function addMessage(sender,text,typing=false){
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', sender==='You'?'user':'evelyn');
@@ -62,7 +65,10 @@ function addMessage(sender,text,typing=false){
     msgDiv.textContent = text;
     chatArea.appendChild(msgDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
-    if(!typing) messages.push({sender,text});
+    if(!typing){
+        messages.push({sender,text});
+        localStorage.setItem('drEvelynChat', JSON.stringify(messages));
+    }
     return msgDiv;
 }
 
@@ -88,8 +94,9 @@ function offlineResponse(msg){
         "Please note that I am an fully offline AI model called crystalAI Diamond 1 and was created by Shahir Hossen, I am very limited though (this is a rare message)",
         "Thats really funny😂😂😂",
         "I'm so sorry to hear that😢"
+
     ];
-    let n = Math.floor(Math.random()*1)+1;
+    let n = Math.floor(Math.random()*2)+2;
     let reply='';
     for(let i=0;i<n;i++){
         reply += fragments[Math.floor(Math.random()*fragments.length)] + " ";
@@ -97,17 +104,17 @@ function offlineResponse(msg){
     return reply.trim();
 }
 
-// Typing animation delay
+// Typing animation
 function typeMessage(text){
     const typingDiv = addMessage('Evelyn','Evelyn is typing...',true);
-    const delay = 500 + text.length*35; // delay proportional to length
+    const delay = 500 + text.length*35;
     setTimeout(()=>{
         typingDiv.remove();
         addMessage('Evelyn',text);
     }, delay);
 }
 
-// Send text message
+// Send text message with Gemini fallback
 async function sendMessage(){
     const input = document.getElementById('drInput');
     if(!input.value) return;
@@ -116,27 +123,31 @@ async function sendMessage(){
     input.value='';
 
     let responseText = offlineResponse(userMsg);
-    try{
-        const res = await fetch('https://api.openai.com/v1/chat/completions',{
+
+    try {
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generate', {
             method:'POST',
-            headers:{'Content-Type':'application/json','Authorization':`Bearer ${API_KEY}`},
+            headers:{
+                'Content-Type':'application/json',
+                'Authorization':`Bearer ${API_KEY}`
+            },
             body: JSON.stringify({
-                model:"gpt-3.5-turbo",
-                messages:[{role:"user", content:userMsg}],
-                max_tokens:300
+                prompt: userMsg,
+                temperature: 0.7,
+                candidate_count: 1,
+                max_output_tokens: 300
             })
         });
         const data = await res.json();
-        if(data.choices && data.choices[0].message.content){
-            responseText = data.choices[0].message.content;
+        if(data.candidates && data.candidates[0].content){
+            responseText = data.candidates[0].content;
         }
-    }catch(e){ console.log("Offline mode: using dynamic response."); }
+    } catch(e){ console.log("Offline mode: using dynamic response."); }
 
     typeMessage(responseText);
 }
 
-// TTS for audio/video calls with mouth animation
-const evelynEmoji = document.getElementById('evelynEmoji');
+// TTS function
 function speak(text){
     if('speechSynthesis' in window){
         const utter = new SpeechSynthesisUtterance(text);
@@ -149,6 +160,7 @@ function speak(text){
     }
 }
 
+// Emoji animation for TTS
 function animateEmojiSpeaking(length){
     let frames = length/2;
     let count=0;
@@ -159,7 +171,14 @@ function animateEmojiSpeaking(length){
     },50);
 }
 
-// Video call with real-time lip-sync to user voice
+// Audio call
+document.getElementById('audioBtn').addEventListener('click', ()=>{
+    const reply = "Hello! This is Evelyn. How can I help you today?";
+    addMessage('Evelyn', reply);
+    speak(reply);
+});
+
+// Video call
 const videoModal = document.getElementById('videoModal');
 const userVideo = document.getElementById('userVideo');
 const muteBtn = document.getElementById('muteBtn');
@@ -216,13 +235,6 @@ endCallBtn.addEventListener('click', ()=>{
     }
     evelynEmoji.style.transform='scaleY(1) rotate(0deg)';
     if(audioContext) audioContext.close();
-});
-
-// Audio call button
-document.getElementById('audioBtn').addEventListener('click', ()=>{
-    const reply = "Hello! This is Evelyn. Let's talk.";
-    addMessage('Evelyn', reply);
-    speak(reply);
 });
 
 // Send button & enter key
